@@ -11,7 +11,7 @@ const config = {
     // que es lo que vamos a mostrar, letras o palabras
     type: textType.letter,
     // cuantas milisegundos mostraremos cada palabra o letra
-    time: 1000,
+    time: 700,
     // si queremos que se repita el texto
     loop: true,
     // cada cuantas palabras separamos por linea
@@ -44,17 +44,28 @@ function easeInOutQuad(t, b, c, d) {
     return -c/2 * (t*(t-2) - 1) + b;
 }
 
+let animationTimer = [];
+
+function clearAnimationTimer() {
+    animationTimer.forEach((timer) => {
+        clearTimeout(timer);
+    });
+    animationTimer = [];
+}
+
 function animatedScrollTo(element, to, duration) {
     const start = element.scrollTop,
         change = to - start,
         increment = 20;
     let currentTime = 0;
+    clearAnimationTimer();
     const animateScroll = function() {
         currentTime += increment;
         const val = easeInOutQuad(currentTime, start, change, duration);
         element.scrollTop = val;
         if (currentTime < duration) {
-            setTimeout(animateScroll, increment);
+            let timer = setTimeout(animateScroll, increment);
+            animationTimer.push(timer);
         }
     };
     animateScroll();
@@ -114,8 +125,9 @@ function next() {
     // posicion del elemento seleccionado
     const position = (firstSelectedRect.top + middleHeight + document.documentElement.scrollTop) - middleScreen;
 
+    let duration = ruleOfThreeSimple(1000, 500, config.time);
     // scroll to position
-    animatedScrollTo(document.documentElement, position, 500);
+    animatedScrollTo(document.documentElement, position, duration);
 }
 function play() {
     control.play = true;
@@ -127,6 +139,14 @@ function pause() {
     control.play = false;
     wrapper.classList.remove('play');
     interval && clearInterval(interval);
+}
+function updateInterval() {
+    if (!control.play) {
+        return;
+    }
+    clearAnimationTimer();
+    interval && clearInterval(interval);
+    interval = setInterval(next, config.time);
 }
 
 function togglePlay() {
@@ -154,6 +174,11 @@ function transformText(text) {
     });
 
     return text;
+}
+
+//  Math: regla de 3 simple
+function ruleOfThreeSimple(v1, v2, v3) {
+    return (v1 * v3) / v2;
 }
 
 // creamos un span para cada letra
@@ -292,14 +317,26 @@ function getSiblings(element) {
     return nodes;
 }
 
+function printSegs() {
+    const element = button.time;
+    const segs = config.time / 1000;
+    element.innerText = `${segs.toFixed(2)}`;
+}
+
+function trimText(text) {
+    return text.replace(/^\s+|\s+$/g, '');
+}
+
 function handleInput(event) {
     if (event.key === 'Enter') {
         event.preventDefault();
         return;
     }
-    if (customInput.innerText.length === 0) {
+    if (trimText(customInput.innerText).length === 0) {
+        customInput.innerHTML = '';
         return;
     }
+
     let cursorPosition = getCursorPosition();
     createLetters();
     setCursorPosition(cursorPosition);
@@ -350,6 +387,9 @@ const button = {
     rewind: document.querySelector('#rewind'),
     pause: document.querySelector('#pause'),
     play: document.querySelector('#play'),
+    time: document.querySelector('#time'),
+    timePlus: document.querySelector('#time-plus'),
+    timeMinus: document.querySelector('#time-minus'),
 };
 
 // ejecutamos la funcion handleInput al momento de escribir en customInput
@@ -358,6 +398,7 @@ customInput.addEventListener('click', handleCursorPosition);
 customInput.addEventListener('keydown', handleActions);
 
 createLetters();
+printSegs();
 
 button.textIncrease.addEventListener('click', () => {
     config.fontSize += 1;
@@ -379,4 +420,22 @@ button.pause.addEventListener('click', () => {
 
 button.play.addEventListener('click', () => {
     play();
+});
+
+button.timePlus.addEventListener('click', () => {
+    config.time += 25;
+    if (config.time > 5000) {
+        config.time = 5000;
+    }
+    updateInterval();
+    printSegs();
+});
+
+button.timeMinus.addEventListener('click', () => {
+    config.time -= 25;
+    if (config.time <= 10) {
+        config.time = 10;
+    }
+    updateInterval();
+    printSegs();
 });

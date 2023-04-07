@@ -3,6 +3,11 @@
     font-family: 'Source Sans Pro', sans-serif;
 }
 
+body {
+    padding: 0;
+    margin: 0;
+}
+
 .material-symbols-outlined {
     font-variation-settings:
     'FILL' 0,
@@ -23,7 +28,7 @@ h1 {
     padding: 0 15px;
     margin: 0 auto;
     font-weight: 500;
-    width: 100%;
+    width: calc(100% - 30px);
 }
 
 .wrapper:not(.play) #pause {
@@ -34,12 +39,17 @@ h1 {
 }
 
 .custom-input {
-    border: 1px solid #ccc;
+    box-sizing: border-box;
     border-radius: 4px;
     font-size: 14px;
-    padding: 10px;
+    padding: 10px 0;
+    outline: none;
+    border: none;
     width: 100%;
-    box-sizing: border-box;
+}
+.custom-input:is(:empty)::before {
+    content: "Escribe o pega un texto aqui...";
+    color: #7a7a7a;
 }
 .custom-input .space.cursor {
     /* background color cyan with trasparency */
@@ -84,4 +94,12 @@ h1 {
     position: sticky;
     padding: 20px 0;
     top: 0;
+}
+.timer {
+    vertical-align: text-bottom;
+    text-transform: capitalize;
+    display: inline-block;
+    padding: 5px 15px;
+    font-weight: 400;
+    font-size: 15px;
 }
