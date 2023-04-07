@@ -54,6 +54,7 @@ h1 {
 .custom-input .word {
     margin: 0 0 5px;
     color: #7a7a7a;
+    white-space: nowrap;
 }
 .custom-input .word.cursor {
     /* background color gray with trasparency */

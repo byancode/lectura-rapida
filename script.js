@@ -11,11 +11,11 @@ const config = {
     // que es lo que vamos a mostrar, letras o palabras
     type: textType.letter,
     // cuantas milisegundos mostraremos cada palabra o letra
-    time: 500,
+    time: 1000,
     // si queremos que se repita el texto
     loop: true,
     // cada cuantas palabras separamos por linea
-    wordsPerLine: 5,
+    wordsPerLine: 4,
     // si queremos que se muestre unicamente la palabra o letra seleccionada
     onlySelected: false,
     // tamaño de la fuente
@@ -37,9 +37,41 @@ const control = {
     position: 0,
 };
 
+function easeInOutQuad(t, b, c, d) {
+    t /= d/2;
+    if (t < 1) return c/2*t*t + b;
+    t--;
+    return -c/2 * (t*(t-2) - 1) + b;
+}
+
+function animatedScrollTo(element, to, duration) {
+    const start = element.scrollTop,
+        change = to - start,
+        increment = 20;
+    let currentTime = 0;
+    const animateScroll = function() {
+        currentTime += increment;
+        const val = easeInOutQuad(currentTime, start, change, duration);
+        element.scrollTop = val;
+        if (currentTime < duration) {
+            setTimeout(animateScroll, increment);
+        }
+    };
+    animateScroll();
+}
+
 let interval = null;
 function rewind() {
     control.position = 0;
+    // scroll to top
+    document.documentElement.scrollTo(0, 0);
+
+    // remove all words selected
+    const words = customInput.querySelectorAll(`span.word`);
+    words.forEach((word) => {
+        word.classList.remove('selected');
+        word.classList.remove('soft');
+    });
 }
 function stop() {
     pause();
@@ -47,8 +79,10 @@ function stop() {
 }
 function next() {
     const words = customInput.querySelectorAll(`span.word`);
+    const selecteds = [];
     words.forEach((word, index) => {
         if (index >= control.position && index < control.position + config.wordsPerLine) {
+            selecteds.push(word);
             word.classList.add('selected');
         } else {
             word.classList.remove('selected');
@@ -60,6 +94,28 @@ function next() {
         }
     });
     control.position += config.wordsPerLine;
+
+    if (selecteds.length < 2) {
+        return;
+    }
+
+    const firstSelected = selecteds[0];
+    const lastSelected = selecteds[selecteds.length - 1];
+
+    const firstSelectedRect = firstSelected.getBoundingClientRect();
+    const lastSelectedRect = lastSelected.getBoundingClientRect();
+
+    // mitad de altura entre la interseccion de ambos elementos
+    const middleHeight = (lastSelectedRect.top - firstSelectedRect.top) / 2;
+
+    // posicionar a la mitad de la pantalla
+    const middleScreen = window.innerHeight / 2;
+
+    // posicion del elemento seleccionado
+    const position = (firstSelectedRect.top + middleHeight + document.documentElement.scrollTop) - middleScreen;
+
+    // scroll to position
+    animatedScrollTo(document.documentElement, position, 500);
 }
 function play() {
     control.play = true;
