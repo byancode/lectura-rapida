@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker build -t byancode/lectura-rapida .
+docker push byancode/lectura-rapida

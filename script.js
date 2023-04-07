@@ -11,7 +11,7 @@ const config = {
     // que es lo que vamos a mostrar, letras o palabras
     type: textType.letter,
     // cuantas milisegundos mostraremos cada palabra o letra
-    time: 70,
+    time: 500,
     // si queremos que se repita el texto
     loop: true,
     // cada cuantas palabras separamos por linea
@@ -245,7 +245,6 @@ function handleInput(event) {
         return;
     }
     let cursorPosition = getCursorPosition();
-    console.log(cursorPosition);
     createLetters();
     setCursorPosition(cursorPosition);
     handleCursorPosition();
@@ -300,8 +299,9 @@ const button = {
 // ejecutamos la funcion handleInput al momento de escribir en customInput
 customInput.addEventListener('input', handleInput);
 customInput.addEventListener('click', handleCursorPosition);
-// event selectionchange
 customInput.addEventListener('keydown', handleActions);
+
+createLetters();
 
 button.textIncrease.addEventListener('click', () => {
     config.fontSize += 1;
